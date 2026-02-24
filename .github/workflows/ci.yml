@@ -10,9 +10,9 @@ jobs:
     defaults:
       run:
         working-directory: backend
-    
+
     services:
-      mariadb:
+      mariadb: 
         image: mariadb:12.1.2
         env:
           MARIADB_ROOT_PASSWORD: toor
@@ -38,7 +38,7 @@ jobs:
           sudo apt install -y mysql-client
           mysql -h 127.0.0.1 --port 3306 -u root -ptoor -e "SHOW DATABASES"
 
-      - name: Setup node
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
@@ -46,16 +46,18 @@ jobs:
       - name: Install Dep
         run: npm i
 
-      - name: Init and populate BDD
-        run: |
-          npm run initbdd
-          npm run populate
+      - name: Init  BDD
+        run: npm run initbdd
+          
+      - name: Populate BDD
+        run : |
+          mysql -u root -ptoor --host 127.0.0.1 --port 3306 --database test < ./test/insert_test_user.sql
 
-      - name: run test and coverage
-        run: npm run test:cov 
+      - name: Run test and coverage
+        run: npm run test:cov
 
       - name: Upload Coverage report
-        uses: actions/upload-artifact@v4 
+        uses: actions/upload-artifact@v4
         with:
           name: back-coverage-report
           path: backend/coverage
@@ -67,75 +69,74 @@ jobs:
     defaults:
       run:
         working-directory: frontend
-    
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: start backend for testing
+      - name: Start Backend
         run: |
           cd ..
           docker compose -f docker-compose-back-build.yml up -d
           docker ps -a
 
-      - name: wait for backend to ready
+      - name: Wait for Backend to be ready
         uses: jakejarvis/wait-action@master
         with:
           time: '10s'
 
-      - name: check backend
+      - name: Check Backend
         if: success()
         run: curl http://127.0.0.1:12000
 
-
-      - name: Setup node
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
           node-version: '20.x'
 
       - name: Cypress E2E Install
-        uses: cypress.io/github-action@v6
-        with: 
+        uses: cypress-io/github-action@v6
+        with:
           runTests: false
           working-directory: frontend
 
       - name: Install Dep
         run: npm i
 
-      - name: Cypress E2E Test
-        uses: cypress.io/github-action@v6
-        with: 
+      - name: Cypress E2E TEST
+        uses: cypress-io/github-action@v6
+        with:
           install: false
           start: npm run dev
           working-directory: frontend
 
-      - name: Generate Coverage report
+      - name: Generate Coverage repport
         run: npm run cypress:cov
+
+      - name: Upload Cy Screen - pour le fun
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshot
+          path: frontend/cypress/screenshots
+          retention-days: 1
 
       - name: Upload Cy Video
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Cypress-videos
-          path: frontend/cypress/videos
-          retention-days: 1
-
-      - name: Upload Cy screen
-        if: always()
-        uses: actions/upload-artifact@v4 
-        with:
-          name: Cypress-screenshot
+          name: cypress-videos
           path: frontend/cypress/videos
           retention-days: 1
 
       - name: Upload Coverage report
-        uses: actions/upload-artifact@v4 
+        uses: actions/upload-artifact@v4
         with:
-          name: Cypress-coverage-report
+          name: cypress-coverage-report
           path: frontend/coverage
           retention-days: 1
 
-      - name: clean docker
+      - name: Clean Docker
         if: always()
         run: |
           cd ..
