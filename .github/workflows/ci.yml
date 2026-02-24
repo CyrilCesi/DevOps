@@ -21,6 +21,9 @@ jobs:
           MARIADB_PASSWORD: test
         ports:
           - 3306:3306
+        options: >
+          --health-cmd="mysqladmin ping -h127.0.0.1 -ptoor" --health-interval=5s --health-timeout=3s --health-retries=20
+
 
     env:
       BDD_HOST: 127.0.0.1
@@ -35,7 +38,7 @@ jobs:
       - name: Database check
         run: |
           sudo apt install -y mysql-client
-          mysql -h mariadb --port 3306 -u root -ptoor -e "SHOW DATABASES"
+          mysql -h 127.0.0.1 --port 3306 -u root -ptoor -e "SHOW DATABASES"
 
       - name: Setup node
         uses: actions/setup-node@v3
