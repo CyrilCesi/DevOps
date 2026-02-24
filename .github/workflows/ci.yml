@@ -21,7 +21,7 @@ jobs:
           MARIADB_PASSWORD: test
         ports:
           - 3306:3306
-        options: "--health-cmd=\"mysqladmin ping -h127.0.0.1 -ptoor\" --health-interval=5s --health-timeout=3s --health-retries=60"
+        options: "--health-cmd=\"mysqladmin ping -h127.0.0.1 -ptoor\" --health-interval=5s --health-timeout=3s --health-retries=60 --health-start-period=60s"
 
     env:
       BDD_HOST: 127.0.0.1
