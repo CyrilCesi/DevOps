@@ -35,7 +35,7 @@ jobs:
       - name: Database check
         run: |
           sudo apt install -y mysql-client
-          mysql -h localhost --port 3306 -u root -ptoor -e "SHOW DATABASES"
+          mysql -h mariadb --port 3306 -u root -ptoor -e "SHOW DATABASES"
 
       - name: Setup node
         uses: actions/setup-node@v3
